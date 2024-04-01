@@ -18,6 +18,10 @@ type SampleImporterProps = ImporterProps<{ fieldA: string }>;
 export const Main: Story<SampleImporterProps> = (args: SampleImporterProps) => {
   return (
     <Importer {...args}
+      dataHandler={async (rows, {startIndex}) => {
+        console.log(rows);
+      }
+    }
       restartable={true}>
       <ImporterField name="start" label="Start" />
       <ImporterField name="end" label="End" />
