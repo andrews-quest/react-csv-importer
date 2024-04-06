@@ -20,6 +20,7 @@ export interface FileStepState extends PreviewReport {
   hasHeaders: boolean;
 }
 
+
 export const FileStep: React.FC<{
   customConfig: CustomizablePapaParseConfig;
   defaultNoHeader?: boolean;
@@ -33,6 +34,11 @@ export const FileStep: React.FC<{
   const [selectedFile, setSelectedFile] = useState<File | null>(
     prevState ? prevState.file : null
   );
+
+  const [remainingFiles, setRemainingFiles] = useState<File[] | null>(
+  );
+
+  const numberOfFiles = useRef(0);
 
   const [preview, setPreview] = useState<PreviewResults | null>(
     () =>
@@ -170,7 +176,12 @@ export const FileStep: React.FC<{
   }, [preview, hasHeaders, l10n]);
 
   if (!selectedFile) {
-    return <FileSelector onSelected={(file) => setSelectedFile(file)} />;
+    return <FileSelector onSelected={
+      (files) => {
+        setSelectedFile(files[0]);
+        setRemainingFiles(files.slice(1));
+      }
+    } />
   }
 
   return (
