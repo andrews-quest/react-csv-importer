@@ -21,7 +21,7 @@ export const FileSelector: React.FC<{ onSelected: (file: File[]) => void }> = ({
       // return;
     }
 
-    const file = acceptedFiles[0];
+    const file = acceptedFiles;
     onSelectedRef.current(file);
   }, []);
 

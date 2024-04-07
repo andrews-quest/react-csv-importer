@@ -43,8 +43,6 @@ export function Importer<Row extends BaseRow>(
   const [fieldsState, setFieldsState] = useState<FieldsStepState | null>(null);
   const [fieldsAccepted, setFieldsAccepted] = useState<boolean>(false);
 
-  const [numberOfFiles, setNumberOfFiles] = useState(0);
-
   // reset field assignments when file changes
   const activeFile = fileState && fileState.file;
   useEffect(() => {
@@ -142,15 +140,30 @@ export function Importer<Row extends BaseRow>(
             restartable
               ? () => {
                   // reset all state
-                  setFileState(null);
+                  if(fileState.remainingFiles?.length == 0){
+                    setFileState(null);
+                  }else{
+                    setFileState({
+                      file: fileState.remainingFiles[0],
+                      papaParseConfig: fileState.papaParseConfig,
+                      hasHeaders: fileState.hasHeaders,
+                      firstChunk: fileState.firstChunk,
+                      firstRows: fileState.firstRows,
+                      isSingleLine: fileState.isSingleLine,
+                      remainingFiles: fileState.remainingFiles?.splice(1)
+                    })
+                  }                  
                   setFileAccepted(false);
                   setFieldsState(null);
                   setFieldsAccepted(false);
-                  setNumberOfFiles(0);
                 }
               : undefined
           }
-          onComplete={onComplete}
+          onComplete={
+              () => {
+                onComplete;
+              }              
+            }
           onClose={onClose}
         />
       </div>

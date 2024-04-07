@@ -18,6 +18,7 @@ import { useLocale } from '../../locale/LocaleContext';
 export interface FileStepState extends PreviewReport {
   papaParseConfig: CustomizablePapaParseConfig; // config that was used for preview parsing
   hasHeaders: boolean;
+  remainingFiles: File[] | null;
 }
 
 
@@ -36,9 +37,9 @@ export const FileStep: React.FC<{
   );
 
   const [remainingFiles, setRemainingFiles] = useState<File[] | null>(
+    prevState ? prevState.remainingFiles : null
   );
 
-  const numberOfFiles = useRef(0);
 
   const [preview, setPreview] = useState<PreviewResults | null>(
     () =>
@@ -68,10 +69,10 @@ export const FileStep: React.FC<{
   useEffect(() => {
     onChangeRef.current(
       preview && !preview.parseError
-        ? { ...preview, papaParseConfig, hasHeaders }
+        ? { ...preview, papaParseConfig, hasHeaders, remainingFiles }
         : null
     );
-  }, [preview, papaParseConfig, hasHeaders]);
+  }, [preview, papaParseConfig, hasHeaders, remainingFiles]);
 
   // perform async preview parse once for the given file
   const asyncLockRef = useRef<number>(0);
