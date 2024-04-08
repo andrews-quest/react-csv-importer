@@ -26,14 +26,15 @@ export const FileStep: React.FC<{
   customConfig: CustomizablePapaParseConfig;
   defaultNoHeader?: boolean;
   prevState: FileStepState | null;
+  nextFile: File | null;
   onChange: (state: FileStepState | null) => void;
   onAccept: () => void;
-}> = ({ customConfig, defaultNoHeader, prevState, onChange, onAccept }) => {
+}> = ({ customConfig, defaultNoHeader, prevState, nextFile, onChange, onAccept }) => {
   const l10n = useLocale('fileStep');
 
   // seed from previous state as needed
   const [selectedFile, setSelectedFile] = useState<File | null>(
-    prevState ? prevState.file : null
+    prevState ? prevState.file : (nextFile ? nextFile : null)
   );
 
   const [remainingFiles, setRemainingFiles] = useState<File[] | null>(
@@ -94,6 +95,7 @@ export const FileStep: React.FC<{
     const config = customConfigRef.current;
 
     // kick off the preview parse
+
     parsePreview(selectedFile, config).then((results) => {
       // ignore if stale
       if (oplock !== asyncLockRef.current) {
@@ -111,6 +113,8 @@ export const FileStep: React.FC<{
           : !defaultNoHeaderRef.current && !results.isSingleLine
       );
     });
+
+    
 
     return () => {
       // invalidate current oplock on change or unmount

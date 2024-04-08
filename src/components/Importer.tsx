@@ -1,6 +1,6 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 
-import { BaseRow } from '../parser';
+import { BaseRow, parsePreview } from '../parser';
 import { FileStep, FileStepState } from './file-step/FileStep';
 import { generatePreviewColumns } from './fields-step/ColumnPreview';
 import { FieldsStep, FieldsStepState } from './fields-step/FieldsStep';
@@ -43,6 +43,8 @@ export function Importer<Row extends BaseRow>(
   const [fieldsState, setFieldsState] = useState<FieldsStepState | null>(null);
   const [fieldsAccepted, setFieldsAccepted] = useState<boolean>(false);
 
+  const [remainingFiles, setRemainingFiles] = useState<File[] | null>(null);
+
   // reset field assignments when file changes
   const activeFile = fileState && fileState.file;
   useEffect(() => {
@@ -78,8 +80,10 @@ export function Importer<Row extends BaseRow>(
             customConfig={customPapaParseConfig}
             defaultNoHeader={defaultNoHeader ?? assumeNoHeaders}
             prevState={fileState}
+            nextFile={remainingFiles ? remainingFiles[0] : null}
             onChange={(parsedPreview) => {
               setFileState(parsedPreview);
+              fileState ? setRemainingFiles(fileState.remainingFiles) : null
             }}
             onAccept={() => {
               setFileAccepted(true);
@@ -140,19 +144,9 @@ export function Importer<Row extends BaseRow>(
             restartable
               ? () => {
                   // reset all state
-                  if(fileState.remainingFiles?.length == 0){
-                    setFileState(null);
-                  }else{
-                    setFileState({
-                      file: fileState.remainingFiles[0],
-                      papaParseConfig: fileState.papaParseConfig,
-                      hasHeaders: fileState.hasHeaders,
-                      firstChunk: fileState.firstChunk,
-                      firstRows: fileState.firstRows,
-                      isSingleLine: fileState.isSingleLine,
-                      remainingFiles: fileState.remainingFiles?.splice(1)
-                    })
-                  }                  
+                  remainingFiles?.splice(1);
+                  remainingFiles?.length === 0 ? setRemainingFiles(null) : null;
+                  setFileState(null);            
                   setFileAccepted(false);
                   setFieldsState(null);
                   setFieldsAccepted(false);
