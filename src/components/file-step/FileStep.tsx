@@ -18,7 +18,6 @@ import { useLocale } from '../../locale/LocaleContext';
 export interface FileStepState extends PreviewReport {
   papaParseConfig: CustomizablePapaParseConfig; // config that was used for preview parsing
   hasHeaders: boolean;
-  remainingFiles: File[] | null;
 }
 
 
@@ -27,7 +26,7 @@ export const FileStep: React.FC<{
   defaultNoHeader?: boolean;
   prevState: FileStepState | null;
   nextFile: File | null;
-  onChange: (state: FileStepState | null) => void;
+  onChange: (state: FileStepState | null, remainingFiles: File[] | null) => void;
   onAccept: () => void;
 }> = ({ customConfig, defaultNoHeader, prevState, nextFile, onChange, onAccept }) => {
   const l10n = useLocale('fileStep');
@@ -37,9 +36,7 @@ export const FileStep: React.FC<{
     prevState ? prevState.file : (nextFile ? nextFile : null)
   );
 
-  const [remainingFiles, setRemainingFiles] = useState<File[] | null>(
-    prevState ? prevState.remainingFiles : null
-  );
+  const remainingFiles = useRef<File[] | null>(null);
 
 
   const [preview, setPreview] = useState<PreviewResults | null>(
@@ -70,8 +67,9 @@ export const FileStep: React.FC<{
   useEffect(() => {
     onChangeRef.current(
       preview && !preview.parseError
-        ? { ...preview, papaParseConfig, hasHeaders, remainingFiles }
-        : null
+        ? { ...preview, papaParseConfig, hasHeaders}
+        : null,
+        remainingFiles.current
     );
   }, [preview, papaParseConfig, hasHeaders, remainingFiles]);
 
@@ -184,7 +182,12 @@ export const FileStep: React.FC<{
     return <FileSelector onSelected={
       (files) => {
         setSelectedFile(files[0]);
-        setRemainingFiles(files.slice(1));
+        if(files.length > 1){
+          remainingFiles.current = files.slice(1);
+        }else{
+          remainingFiles.current = null;
+        }
+        
       }
     } />
   }
@@ -197,7 +200,6 @@ export const FileStep: React.FC<{
         if (!preview || preview.parseError) {
           throw new Error('unexpected missing preview info');
         }
-
         onAccept();
       }}
       onCancel={() => setSelectedFile(null)}

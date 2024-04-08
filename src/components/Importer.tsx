@@ -43,7 +43,7 @@ export function Importer<Row extends BaseRow>(
   const [fieldsState, setFieldsState] = useState<FieldsStepState | null>(null);
   const [fieldsAccepted, setFieldsAccepted] = useState<boolean>(false);
 
-  const [remainingFiles, setRemainingFiles] = useState<File[] | null>(null);
+  const remainingFiles = useRef<File[] | null>(null);
 
   // reset field assignments when file changes
   const activeFile = fileState && fileState.file;
@@ -80,10 +80,11 @@ export function Importer<Row extends BaseRow>(
             customConfig={customPapaParseConfig}
             defaultNoHeader={defaultNoHeader ?? assumeNoHeaders}
             prevState={fileState}
-            nextFile={remainingFiles ? remainingFiles[0] : null}
-            onChange={(parsedPreview) => {
+            nextFile={remainingFiles.current ? remainingFiles.current[0] : null}
+            onChange={(parsedPreview, remFiles) => {
+              debugger
               setFileState(parsedPreview);
-              fileState ? setRemainingFiles(fileState.remainingFiles) : null
+              remFiles ? remainingFiles.current = remFiles : null
             }}
             onAccept={() => {
               setFileAccepted(true);
@@ -144,9 +145,12 @@ export function Importer<Row extends BaseRow>(
             restartable
               ? () => {
                   // reset all state
-                  remainingFiles?.splice(1);
-                  remainingFiles?.length === 0 ? setRemainingFiles(null) : null;
-                  setFileState(null);            
+                  if(remainingFiles.current){
+                    remainingFiles.current = remainingFiles.current.splice(1);
+                    remainingFiles.current.length == 0 ? remainingFiles.current = null : null;
+                  }
+                  
+                  setFileState(null);
                   setFileAccepted(false);
                   setFieldsState(null);
                   setFieldsAccepted(false);
@@ -156,7 +160,7 @@ export function Importer<Row extends BaseRow>(
           onComplete={
               () => {
                 onComplete;
-              }              
+              }
             }
           onClose={onClose}
         />
