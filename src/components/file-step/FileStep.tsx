@@ -26,9 +26,10 @@ export const FileStep: React.FC<{
   defaultNoHeader?: boolean;
   prevState: FileStepState | null;
   nextFile: File | null;
+  noVerify: boolean;
   onChange: (state: FileStepState | null, remainingFiles: File[] | null) => void;
   onAccept: () => void;
-}> = ({ customConfig, defaultNoHeader, prevState, nextFile, onChange, onAccept }) => {
+}> = ({ customConfig, defaultNoHeader, prevState, nextFile, noVerify, onChange, onAccept }) => {
   const l10n = useLocale('fileStep');
 
   // seed from previous state as needed
@@ -192,24 +193,30 @@ export const FileStep: React.FC<{
     } />
   }
 
-  return (
-    <ImporterFrame
-      fileName={selectedFile.name}
-      nextDisabled={!preview || !!preview.parseError || !!preview.parseWarning}
-      onNext={() => {
-        if (!preview || preview.parseError) {
-          throw new Error('unexpected missing preview info');
-        }
-        onAccept();
-      }}
-      onCancel={() => setSelectedFile(null)}
-      nextLabel={l10n.nextButton}
-    >
-      {reportBlock || (
-        <div className="CSVImporter_FileStep__mainPendingBlock">
-          {l10n.previewLoadingStatus}
-        </div>
-      )}
-    </ImporterFrame>
-  );
+  if(!noVerify){
+    return (
+      <ImporterFrame
+        fileName={selectedFile.name}
+        nextDisabled={!preview || !!preview.parseError || !!preview.parseWarning}
+        onNext={() => {
+          if (!preview || preview.parseError) {
+            throw new Error('unexpected missing preview info');
+          }
+          onAccept();
+        }}
+        onCancel={() => setSelectedFile(null)}
+        nextLabel={l10n.nextButton}
+      >
+        {reportBlock || (
+          <div className="CSVImporter_FileStep__mainPendingBlock">
+            {l10n.previewLoadingStatus}
+          </div>
+        )}
+      </ImporterFrame>
+    );
+  }else{
+    onAccept();
+    return null
+  }
+
 };
